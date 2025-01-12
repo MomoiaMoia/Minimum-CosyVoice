@@ -23,7 +23,10 @@ import torchaudio
 import os
 import re
 import inflect
-
+# 修改了平台的判定
+# 在windows上使用WeTextProcessing
+# 在linux上使用ttsfrd
+# date: 2025-01-11
 import sys
 if sys.platform.startswith("linux"):
     try:
@@ -56,6 +59,8 @@ class CosyVoiceFrontEnd:
         option = onnxruntime.SessionOptions()
         option.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
         option.intra_op_num_threads = 1
+        # 修改了onnxruntime的provider
+        # date: 2025-01-11
         self.campplus_session = onnxruntime.InferenceSession(campplus_model, sess_options=option, providers=["CPUExecutionProvider", "CUDAExecutionProvider"])
         self.speech_tokenizer_session = onnxruntime.InferenceSession(speech_tokenizer_model, sess_options=option,
                                                                      providers=["CPUExecutionProvider", "CUDAExecutionProvider"])
@@ -67,8 +72,7 @@ class CosyVoiceFrontEnd:
         self.use_ttsfrd = use_ttsfrd
         if self.use_ttsfrd:
             self.frd = ttsfrd.TtsFrontendEngine()
-            # there have some change to march dir
-            ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+            # 修改了模型的下载地址，默认下载到~/.swarmclone/tts_cosy_voice/
             RESOURCE_DIR = os.path.expanduser("~/.swarmclone/tts_cosy_voice/CosyVoice-ttsfrd/resource")
             assert self.frd.initialize(RESOURCE_DIR) is True, \
                 'failed to initialize ttsfrd resource'
