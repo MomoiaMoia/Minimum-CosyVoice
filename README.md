@@ -27,7 +27,7 @@ pip install -r requirements_tts_cosyvoice.txt
 
 ## 使用方法
 
-请参考 [SwarmClone](https://github.com/SwarmClone/SwarmClone) 项目的具体文档获取更多关于使用方法的细节。
+请参考 [FunAudioLLM/CosyVoice](https://github.com/FunAudioLLM/CosyVoice) 项目的具体文档获取更多关于使用方法的细节。
 
 ## 贡献
 
