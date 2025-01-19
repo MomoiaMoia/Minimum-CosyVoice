@@ -9,9 +9,9 @@ from time import time
 import playsound
 import torchaudio
 
-from config_tts import TTSConfig
+from .config_tts import TTSConfig
 from cosyvoice.cli.cosyvoice import CosyVoice, CosyVoice2
-
+from mfa.align import download_model_and_dict, init_mfa_models, align
 
 if __name__ == "__main__":
     # warnings.filterwarnings("ignore", message=".*LoRACompatibleLinear.*")
@@ -34,14 +34,33 @@ if __name__ == "__main__":
                 raise
         else:
             raise
-        
-    outputs = list(cosyvoice.inference_sft("收到好友从远方寄来的生日礼物，那份意外的惊喜与深深的祝福让我心中充满了甜蜜的快乐，笑容如花儿般绽放。", '中文女', stream=False))[0]["tts_speech"]
     
-    temp_dir = tempfile.gettempdir()
-    fname = os.path.join(temp_dir, f"voice{time()}.mp3")
-    torchaudio.save(fname, outputs, 22050)
-    playsound.playsound(os.path.abspath(fname))
-    os.remove(os.path.abspath(fname))
+    mfa_dir = os.path.expanduser(os.path.join(TTSConfig.MODELPATH, "mfa"))
+    if not (os.path.exists(mfa_dir) and
+            os.path.exists(os.path.join(mfa_dir, "mandarin_china_mfa.dict")) and
+            os.path.exists(os.path.join(mfa_dir, "mandarin_mfa.zip"))):
+        print(" * SwarmClone 使用 Montreal Forced Aligner 进行对齐，开始下载: ")
+        download_model_and_dict(TTSConfig)
+    acoustic_model, lexicon_compiler, tokenizer, pretrained_aligner = init_mfa_models(TTSConfig)
+        
+        
+    s = "收到好友从远方寄来的生日礼物，那份意外的惊喜与深深的祝福让我心中充满了甜蜜的快乐，笑容如花儿般绽放。"
+    outputs = list(cosyvoice.inference_sft(s, '中文女', stream=False))[0]["tts_speech"]
+    # 音频文件
+    audio_name = os.path.abspath(os.path.join("example", "output", f"voice{time()}.mp3"))
+    torchaudio.save(audio_name, outputs, 22050)
+    # 字幕文件
+    txt_name = audio_name.replace(".mp3", ".txt")
+    open(txt_name, "w", encoding="utf-8").write(s)
+    # 对齐文件
+    align(audio_name, txt_name, acoustic_model, lexicon_compiler, tokenizer, pretrained_aligner)
+    align_name = audio_name.replace(".mp3", ".TextGrid")
+    
+    playsound.playsound(audio_name)
+    # 删除文件
+    # os.remove(audio_name)
+    # os.remove(txt_name)
+    # os.remove(align_name)
 
 
     

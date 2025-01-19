@@ -6,28 +6,43 @@
 
 ## 修改内容
 
+- [2025年1月19日] 添加 [Montreal-Forced-Aligner](https://github.com/MontrealCorpusTools/Montreal-Forced-Aligner) 生成对齐文件。
 - 移除了未被使用的 `MatchTTS` 的多数文件，以减少库的体积和复杂性。
 - 模型将被自动下载到用户目录下的路径：
-  ```
+
+  ```bash
   USER_HOME/.swarmclone/tts_cosy_voice/
   ```
+
 - 不支持通过传入参数的方式修改模型下载路径，如果需要更改模型存储位置，可以通过创建软链接的方式实现。例如：
-    ```bash
-    ln -s /your/custom/path/tts_cosy_voice $HOME/.swarmclone/tts_cosy_voice
-    ```
+
+  ```bash
+  ln -s /your/custom/path/tts_cosy_voice $HOME/.swarmclone/tts_cosy_voice
+  ```
+
 - 系统适配：
   - **Linux 系统**：使用 `ttsfrd`。
   - **Windows 系统**：使用 `wetextprocessing`。
 
 ## 安装
 
+该版本 CosyVoice 使用 PyTorch == 2.5.1，安装其他依赖请使用：
+
 ```bash
-pip install -r requirements_tts_cosyvoice.txt
+python get_cosyvoice_reqs.py
 ```
 
 ## 使用方法
 
-请参考 [FunAudioLLM/CosyVoice](https://github.com/FunAudioLLM/CosyVoice) 项目的具体文档获取更多关于使用方法的细节。
+运行示例请使用：
+
+```bash
+python -m example.example
+```
+
+运行将在 example/output/ 目录下生成 `voice{time()}.mp3`,`voice{time()}.txt`,`voice{time()}.TextGrid`。
+
+请参考 [FunAudioLLM/CosyVoice](https://github.com/FunAudioLLM/CosyVoice) 项目的具体文档获取更多关于其他使用方法的细节。
 
 ## 贡献
 
@@ -36,4 +51,3 @@ pip install -r requirements_tts_cosyvoice.txt
 ## 许可协议
 
 本项目基于原 [CosyVoice](https://github.com/FunAudioLLM/CosyVoice) 项目的许可证，具体请参阅 [LICENSE](./LICENSE) 文件。
-
