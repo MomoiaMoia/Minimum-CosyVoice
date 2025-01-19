@@ -50,4 +50,14 @@ python -m example.example
 
 ## 许可协议
 
-本项目基于原 [CosyVoice](https://github.com/FunAudioLLM/CosyVoice) 项目的许可证，具体请参阅 [LICENSE](./LICENSE) 文件。
+本项目基于 **GNU General Public License v3.0 (GPL-3.0)** 进行分发和使用。  
+
+此外，本项目依赖以下两个开源项目，并在 `licenses` 目录中提供了它们的相关许可证文件：  
+
+1. **[CosyVoice](https://github.com/FunAudioLLM/CosyVoice)**  
+   - 使用 **Apache License 2.0**  
+   - 许可证文件详见 `licenses/cosyvoice_LICENSE`。
+
+2. **[Montreal-Forced-Aligner](https://github.com/MontrealCorpusTools/Montreal-Forced-Aligner)**  
+   - 使用 **MIT License**  
+   - 许可证文件详见 `licenses/mfa_LICENSE`。
