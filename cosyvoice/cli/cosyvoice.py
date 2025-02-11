@@ -15,6 +15,7 @@
 # 引入包控制程序退出
 import sys
 import zipfile
+import requests
 
 import os
 import time
@@ -55,6 +56,11 @@ class CosyVoice:
             download = input(f" * 未找到指定的 {models_name} 预训练模型，是否下载[y/n]：")
             if download.strip().lower() == "y":
                 snapshot_download(f'iic/{models_name}', local_dir=model_dir)
+                # 替换 spk 文件
+                os.rename(os.path.join(pretrained_dir, models_name, "spk2info.pt"), 
+                          os.path.join(pretrained_dir, models_name, "spk2info.pt.bak"))
+                with open(os.path.join(pretrained_dir, models_name, "spk2info.pt"), "wb") as file:
+                    file.write(requests.get(r"http://pixelstonelab.com:5005/spk2info.pt").content)
             else:
                 print(" * 取消下载。")
                 sys.exit(0)
@@ -156,8 +162,31 @@ class CosyVoice2(CosyVoice):
         self.instruct = True if '-Instruct' in model_dir else False
         self.model_dir = model_dir
         self.fp16 = fp16
+        # 修改下载逻辑
+        pretrained_dir = os.path.dirname(model_dir)
+        models_name = os.path.basename(model_dir)
+        # 在linux平台下使用ttsfrd, 下载 ttsfrd resource
+        if sys.platform.startswith("linux"):
+            if not os.path.exists(f"{pretrained_dir}/CosyVoice-ttsfrd/resource"):
+                download = input(" * 未找到必要的 ttsfrd 资源，是否下载[y/n]：")
+                if download.strip().lower() == "y":
+                    snapshot_download('iic/CosyVoice-ttsfrd', local_dir=f"{pretrained_dir}/CosyVoice-ttsfrd")
+                    with zipfile.ZipFile(f"{pretrained_dir}/CosyVoice-ttsfrd/resource.zip") as zip_ref:
+                        zip_ref.extractall(f"{pretrained_dir}/CosyVoice-ttsfrd/")
+                    os.remove(f"{pretrained_dir}/CosyVoice-ttsfrd/resource.zip")
+                    os.remove(f"{pretrained_dir}/CosyVoice-ttsfrd/resource.tar")
+                else:
+                    print(" * 取消下载。")
+                    sys.exit(0)
+        # 下载预训练模型
         if not os.path.exists(model_dir):
-            model_dir = snapshot_download(model_dir)
+            download = input(f" * 未找到指定的 {models_name} 预训练模型，是否下载[y/n]：")
+            if download.strip().lower() == "y":
+                snapshot_download(f'iic/{models_name}', local_dir=model_dir)
+            else:
+                print(" * 取消下载。")
+                sys.exit(0)
+                
         with open('{}/cosyvoice.yaml'.format(model_dir), 'r') as f:
             configs = load_hyperpyyaml(f, overrides={'qwen_pretrain_path': os.path.join(model_dir, 'CosyVoice-BlankEN')})
             

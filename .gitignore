@@ -170,4 +170,7 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+example/output/*
+example/spk2info_finetune/*
+test.ipynb
 

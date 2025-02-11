@@ -23,10 +23,7 @@ import torchaudio
 import os
 import re
 import inflect
-# 修改了平台的判定
-# 在windows上使用WeTextProcessing
-# 在linux上使用ttsfrd
-# date: 2025-01-11
+
 import sys
 if sys.platform.startswith("linux"):
     try:
@@ -59,11 +56,10 @@ class CosyVoiceFrontEnd:
         option = onnxruntime.SessionOptions()
         option.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
         option.intra_op_num_threads = 1
-        # 修改了onnxruntime的provider
-        # date: 2025-01-11
-        self.campplus_session = onnxruntime.InferenceSession(campplus_model, sess_options=option, providers=["CPUExecutionProvider", "CUDAExecutionProvider"])
+        self.campplus_session = onnxruntime.InferenceSession(campplus_model, sess_options=option, providers=["CPUExecutionProvider"])
         self.speech_tokenizer_session = onnxruntime.InferenceSession(speech_tokenizer_model, sess_options=option,
-                                                                     providers=["CPUExecutionProvider", "CUDAExecutionProvider"])
+                                                                     providers=["CUDAExecutionProvider" if torch.cuda.is_available() else
+                                                                                "CPUExecutionProvider"])
         if os.path.exists(spk2info):
             self.spk2info = torch.load(spk2info, map_location=self.device)
         else:
@@ -72,7 +68,8 @@ class CosyVoiceFrontEnd:
         self.use_ttsfrd = use_ttsfrd
         if self.use_ttsfrd:
             self.frd = ttsfrd.TtsFrontendEngine()
-            # 修改了模型的下载地址，默认下载到~/.swarmclone/tts_cosy_voice/
+            # there have some change to march dir
+            ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
             RESOURCE_DIR = os.path.expanduser("~/.swarmclone/tts_cosy_voice/CosyVoice-ttsfrd/resource")
             assert self.frd.initialize(RESOURCE_DIR) is True, \
                 'failed to initialize ttsfrd resource'
@@ -182,7 +179,7 @@ class CosyVoiceFrontEnd:
     def frontend_instruct(self, tts_text, spk_id, instruct_text):
         model_input = self.frontend_sft(tts_text, spk_id)
         # in instruct mode, we remove spk_embedding in llm due to information leakage
-        del model_input['llm_embedding']
+        # del model_input['llm_embedding']
         instruct_text_token, instruct_text_token_len = self._extract_text_token(instruct_text + '<endofprompt>')
         model_input['prompt_text'] = instruct_text_token
         model_input['prompt_text_len'] = instruct_text_token_len
